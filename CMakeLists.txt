@@ -63,8 +63,8 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp
 )
 
-rclcpp_components_register_nodes(${PROJECT_NAME} "ccl::CCL")
-set(node_plugins "${node_plugins}ccl::CCL;$<TARGET_FILE:${PROJECT_NAME}>\n")
+rclcpp_components_register_nodes(${PROJECT_NAME} "ccl::ElevationCCL")
+set(node_plugins "${node_plugins}ccl::ElevationCCL;$<TARGET_FILE:${PROJECT_NAME}>\n")
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
 install(
