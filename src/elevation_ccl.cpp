@@ -6,6 +6,9 @@ ElevationCCL::ElevationCCL(const rclcpp::NodeOptions options) : rclcpp::Node("cc
 {
     roughness_thres_ = declare_parameter("roughness_threshold", 0.1);
     slope_thres_ = declare_parameter("slope_threshold", 0.1);
+    //
+    double distance_threshold = declare_parameter("distance_threshold", 0.1);
+    ccl_solver_.setDistanceThres(distance_threshold);
 
     sub_grid_map_ = create_subscription<grid_map_msgs::msg::GridMap>(
         "input/grid_map", 1, std::bind(&ElevationCCL::callbackGridMap, this, std::placeholders::_1)
