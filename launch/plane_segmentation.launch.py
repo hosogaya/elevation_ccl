@@ -13,7 +13,7 @@ def read_yaml(file_path):
 
 def generate_launch_description():
     param_file = os.path.join(
-        get_package_share_directory("elevation_ccl"), 
+        get_package_share_directory("plane_segmentation"), 
         'config',
         'param.yaml')
     params = read_yaml(param_file)
@@ -24,9 +24,9 @@ def generate_launch_description():
         executable='component_container', 
         composable_node_descriptions=[
             ComposableNode(
-                package='elevation_ccl', 
-                plugin='ccl::ElevationCCL', 
-                name='elevation_ccl_node',
+                package='plane_segmentation', 
+                plugin='plane_segmentation::PlaneSegmentation', 
+                name='plane_segmentation_node',
                 remappings=[("input/grid_map", "/filtered_map"), ("output/grid_map", "/labeled_map")],
                 parameters=[params],
             )
