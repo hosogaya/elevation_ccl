@@ -19,6 +19,7 @@ private:
     Solver ccl_solver_;
 
     void callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr msg);
+    void visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label);
 
     double roughness_thres_ = 0.1;
     double slope_thres_ = 0.1;

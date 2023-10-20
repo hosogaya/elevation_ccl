@@ -6,7 +6,7 @@ namespace ccl
 class Region 
 {
 public:
-    explicit Region(int label, const Matrix& s);
+    Region(int label, const Matrix& s);
     void addCell(const Vector& s);
     void addRegion(const Region& r);
 
@@ -29,6 +29,8 @@ public:
     void newRegion(const int& row, const int& col) override;
 
     void setDistanceThres(const float thres) {distance_threshold_ = thres;}
+    const Region& getRegion(const int label) const {return regions_[label-1];}
+    Region& getRegionRef(const int label) {return regions_[label-1];}
 private:
     std::vector<Region> regions_;
     float distance_threshold_;

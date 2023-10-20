@@ -36,9 +36,9 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
         }
     }
     
-    const Eigen::MatrixXf& normal_x = map.get("normal_x");
-    const Eigen::MatrixXf& normal_y = map.get("normal_y");
-    const Eigen::MatrixXf& normal_z = map.get("normal_z");
+    const Eigen::MatrixXf& normal_x = map.get("normal_vectors_x");
+    const Eigen::MatrixXf& normal_y = map.get("normal_vectors_y");
+    const Eigen::MatrixXf& normal_z = map.get("normal_vectors_z");
 
     for (int i=0; i<map.getSize()[0]; ++i)
     {
@@ -58,17 +58,53 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
     scores.emplace_back(std::make_pair(slope, slope_thres_));
 
     // solve ccl
-    ccl::Matrix label(slope.rows(), slope.cols());
+    ccl::LabelMatrix label(slope.rows(), slope.cols());
     ccl_solver_.initialize(states, scores, label);
     ccl_solver_.firstScan();
     while (1)
     {
-        if (ccl_solver_.backwardScan()) break;
-        if (ccl_solver_.forwardScan()) break;
+        if (!ccl_solver_.backwardScan()) break;
+        if (!ccl_solver_.forwardScan()) break;
     }
+    std::cout << "finish ccl" << std::endl;
 
-    map.add("label", label);
+    map.add("labels", label.cast<float>());
+    // visualize(map, label);
+
+    grid_map_msgs::msg::GridMap::UniquePtr pub_msg = grid_map::GridMapRosConverter::toMessage(map);
+    pub_grid_map_->publish(std::move(pub_msg));
 }
+
+void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
+{
+    std::vector<std::pair<int, grid_map::Matrix>> mat;
+    for (int i=0; i<label.rows(); ++i)
+    {
+        for (int j=0; j<label.cols(); ++j)
+        {
+            auto itr = std::find_if(mat.begin(), mat.end(), [i,j,label](const std::pair<double, grid_map::Matrix>& m){return m.first == label(i,j);});
+            if (itr == mat.end())
+            {
+                mat.emplace_back(std::make_pair(label(i,j), grid_map::Matrix(map.getSize()[0], map.getSize()[1])));
+                int ind = mat.size() -1;
+                mat[ind].first = label(i,j);
+                mat[ind].second.fill(NAN);
+                mat[ind].second(i,j) = 1.0;
+            }
+            else 
+            {
+                itr->second(i, j) = 1.0;
+            }
+        }
+    }
+    std::string layer;
+    for (size_t i=0; i<mat.size(); ++i)
+    {
+        layer = "label"+mat[i].first;
+        map.add(layer, mat[i].second);
+    }
+}
+
 }
 
 #include <rclcpp_components/register_node_macro.hpp>
