@@ -13,11 +13,14 @@ public:
     int label_;
     int component_num_;
     Vector mean_;
+    Matrix variance_;
 };
 
 class Solver : public SSbCCL
 {
 public:
+    bool isVaild(const int& row, const int& col) const override;
+    
     // check the connectivity according to the states. 
     bool canConnect(const int& row, const int& col, const int& label) const override;
 

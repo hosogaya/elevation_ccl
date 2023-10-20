@@ -6,6 +6,7 @@ ElevationCCL::ElevationCCL(const rclcpp::NodeOptions options) : rclcpp::Node("cc
 {
     roughness_thres_ = declare_parameter("roughness_threshold", 0.1);
     slope_thres_ = declare_parameter("slope_threshold", 0.1);
+    cell_num_thres_ = declare_parameter("cell_num_threshold", 10);
     //
     double distance_threshold = declare_parameter("distance_threshold", 0.1);
     ccl_solver_.setDistanceThres(distance_threshold);
@@ -69,7 +70,11 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
     std::cout << "finish ccl" << std::endl;
 
     map.add("labels", label.cast<float>());
+    map.add("labeled_ground_shape", map.get("elevation_smooth"));
     // visualize(map, label);
+    for (int i=0; i<label.rows(); ++i)
+        for (int j=0; j<label.cols(); ++j)
+            if (label(i,j)==0) map.get("labeled_ground_shape").coeffRef(i,j) = NAN;
 
     grid_map_msgs::msg::GridMap::UniquePtr pub_msg = grid_map::GridMapRosConverter::toMessage(map);
     pub_grid_map_->publish(std::move(pub_msg));
@@ -77,14 +82,16 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
 
 void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
 {
-    std::vector<std::pair<int, grid_map::Matrix>> mat;
+    std::vector<Layers> mat;
     for (int i=0; i<label.rows(); ++i)
     {
         for (int j=0; j<label.cols(); ++j)
         {
-            auto itr = std::find_if(mat.begin(), mat.end(), [i,j,label](const std::pair<double, grid_map::Matrix>& m){return m.first == label(i,j);});
+            if (label(i,j) == 0) continue;
+            auto itr = std::find_if(mat.begin(), mat.end(), [i,j,label](const Layers& m){return m.first == label(i,j);});
             if (itr == mat.end())
             {
+                if(ccl_solver_.getRegionRef(label(i,j)).component_num_ < cell_num_thres_) continue;
                 mat.emplace_back(std::make_pair(label(i,j), grid_map::Matrix(map.getSize()[0], map.getSize()[1])));
                 int ind = mat.size() -1;
                 mat[ind].first = label(i,j);
@@ -97,9 +104,12 @@ void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& lab
             }
         }
     }
+    RCLCPP_INFO(get_logger(), "vaild region num: %ld", mat.size());
     std::string layer;
-    for (size_t i=0; i<mat.size(); ++i)
+    std::sort(mat.begin(), mat.end(), [](const Layers& m1, const Layers& m2){return m1.first < m2.first;});
+    for (size_t i=0; i< 3; ++i)
     {
+        if (mat.size() <=i) continue;
         layer = "label"+mat[i].first;
         map.add(layer, mat[i].second);
     }

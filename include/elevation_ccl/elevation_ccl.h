@@ -8,6 +8,7 @@
 
 namespace ccl {
 
+using Layers = std::pair<int, grid_map::Matrix>;
 class ElevationCCL: public rclcpp::Node
 {
 public:
@@ -23,5 +24,6 @@ private:
 
     double roughness_thres_ = 0.1;
     double slope_thres_ = 0.1;
+    int cell_num_thres_ = 10;
 };
 }

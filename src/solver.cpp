@@ -9,8 +9,8 @@ Region::Region(int label, const Matrix& s)
     label_ = label;
     component_num_ = 1;
     mean_ = s;
-    // variance_.resize(s.size(), s.size());
-    // variance_.setZero();
+    variance_.resize(s.size(), s.size());
+    variance_.setZero();
 }
 
 void Region::addCell(const Vector& s)
@@ -25,6 +25,18 @@ void Region::addRegion(const Region& r)
     component_num_ += r.component_num_;
 }
 
+/*
+    Override functions of Solver
+*/
+bool Solver::isVaild(const int& row, const int& col) const
+{
+    for (const auto& map: *score_) 
+    {
+        if (map.first(row, col) == NAN) return false; 
+        if (map.first(row, col) > map.second) return false;
+    }
+    return true;
+}
 
 bool Solver::canConnect(const int& row, const int& col, const int& label) const
 {

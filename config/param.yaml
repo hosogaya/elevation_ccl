@@ -1,5 +1,6 @@
 /**:
   ros__parameters:
-    roughness_threshold: 0.1
-    slope_threshold: 0.1
-    distance_threshold: 0.1
+    roughness_threshold: 0.01
+    slope_threshold: 0.12184696791
+    distance_threshold: 0.01
+    cell_num_threshold: 10
