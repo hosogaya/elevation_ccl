@@ -78,6 +78,15 @@ void PlaneSegmentation::callbackGridMap(const grid_map_msgs::msg::GridMap::Uniqu
 
     grid_map_msgs::msg::GridMap::UniquePtr pub_msg = grid_map::GridMapRosConverter::toMessage(map);
     pub_grid_map_->publish(std::move(pub_msg));
+
+
+    /* iris */
+    
+    /* select connected region */
+
+    /* get contour of the selected region */
+
+    /* solve iris */
 }
 
 void PlaneSegmentation::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
