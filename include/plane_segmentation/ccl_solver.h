@@ -1,22 +1,22 @@
 #pragma once
 #include <ssb_ccl.h>
 
-namespace ccl
+namespace plane_segmentation
 {
 class Region 
 {
 public:
-    Region(int label, const Matrix& s);
-    void addCell(const Vector& s);
+    Region(int label, const ccl::Matrix& s);
+    void addCell(const ccl::Vector& s);
     void addRegion(const Region& r);
 
     int label_;
     int component_num_;
-    Vector mean_;
-    Matrix variance_;
+    ccl::Vector mean_;
+    ccl::Matrix variance_;
 };
 
-class Solver : public SSbCCL
+class CclSolver : public ccl::SSbCCL
 {
 public:
     bool isVaild(const int& row, const int& col) const override;

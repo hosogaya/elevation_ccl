@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(elevation_ccl)
+project(plane_segmentation)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -25,6 +25,7 @@ find_package(grid_map_ros REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ssb-ccl REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(iris REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -41,8 +42,8 @@ endif()
 set(node_plugins "")
 
 add_library(${PROJECT_NAME} SHARED
-  src/elevation_ccl.cpp
-  src/solver.cpp
+  src/plane_segmentation.cpp
+  src/ccl_solver.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -63,8 +64,8 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp
 )
 
-rclcpp_components_register_nodes(${PROJECT_NAME} "ccl::ElevationCCL")
-set(node_plugins "${node_plugins}ccl::ElevationCCL;$<TARGET_FILE:${PROJECT_NAME}>\n")
+rclcpp_components_register_nodes(${PROJECT_NAME} "plane_segmentation::PlaneSegmentation")
+set(node_plugins "${node_plugins}plane_segmentation::PlaneSegmentation;$<TARGET_FILE:${PROJECT_NAME}>\n")
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
 install(

@@ -1,10 +1,10 @@
-#include <elevation_ccl/solver.h>
+#include <plane_segmentation/ccl_solver.h>
 #include <iostream>
 
-namespace ccl
+namespace plane_segmentation
 {
 
-Region::Region(int label, const Matrix& s)
+Region::Region(int label, const ccl::Matrix& s)
 {
     label_ = label;
     component_num_ = 1;
@@ -13,7 +13,7 @@ Region::Region(int label, const Matrix& s)
     variance_.setZero();
 }
 
-void Region::addCell(const Vector& s)
+void Region::addCell(const ccl::Vector& s)
 {
     mean_ = (mean_*component_num_ + s)/(component_num_);
     ++component_num_;
@@ -26,9 +26,9 @@ void Region::addRegion(const Region& r)
 }
 
 /*
-    Override functions of Solver
+    Override functions of CclSolver
 */
-bool Solver::isVaild(const int& row, const int& col) const
+bool CclSolver::isVaild(const int& row, const int& col) const
 {
     for (const auto& map: *score_) 
     {
@@ -38,7 +38,7 @@ bool Solver::isVaild(const int& row, const int& col) const
     return true;
 }
 
-bool Solver::canConnect(const int& row, const int& col, const int& label) const
+bool CclSolver::canConnect(const int& row, const int& col, const int& label) const
 {
     const int cell_label = labels_->coeff(row, col);
     // connect with a cell
@@ -61,13 +61,13 @@ bool Solver::canConnect(const int& row, const int& col, const int& label) const
     return false;
 }
 
-void Solver::connect(const int& row, const int& col, const int& label)
+void CclSolver::connect(const int& row, const int& col, const int& label)
 {
     const int cell_label = labels_->coeff(row, col);
     // connect with a cell
     if (cell_label==0)
     {   
-        const Vector& state = state_->at(row).at(col);
+        const ccl::Vector& state = state_->at(row).at(col);
         getRegionRef(label).addCell(state);
     }
     else // connect with a region 
@@ -77,7 +77,7 @@ void Solver::connect(const int& row, const int& col, const int& label)
     }    
 }
     
-void Solver::newRegion(const int& row, const int& col) 
+void CclSolver::newRegion(const int& row, const int& col) 
 {
     regions_.emplace_back(regions_.size()+1, state_->at(row).at(col));
     // std::cout << "Create new region. label: " << regions_.size() << "mean: " << regions_[regions_.size()-1].mean_ << std::endl;

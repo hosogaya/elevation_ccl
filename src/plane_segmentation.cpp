@@ -1,8 +1,8 @@
-#include <elevation_ccl/elevation_ccl.h>
+#include <plane_segmentation/plane_segmentation.h>
 
-namespace ccl
+namespace plane_segmentation
 {
-ElevationCCL::ElevationCCL(const rclcpp::NodeOptions options) : rclcpp::Node("ccl", options)
+PlaneSegmentation::PlaneSegmentation(const rclcpp::NodeOptions options) : rclcpp::Node("ccl", options)
 {
     roughness_thres_ = declare_parameter("roughness_threshold", 0.1);
     slope_thres_ = declare_parameter("slope_threshold", 0.1);
@@ -12,7 +12,7 @@ ElevationCCL::ElevationCCL(const rclcpp::NodeOptions options) : rclcpp::Node("cc
     ccl_solver_.setDistanceThres(distance_threshold);
 
     sub_grid_map_ = create_subscription<grid_map_msgs::msg::GridMap>(
-        "input/grid_map", 1, std::bind(&ElevationCCL::callbackGridMap, this, std::placeholders::_1)
+        "input/grid_map", 1, std::bind(&PlaneSegmentation::callbackGridMap, this, std::placeholders::_1)
     );
 
     pub_grid_map_ = create_publisher<grid_map_msgs::msg::GridMap>(
@@ -20,9 +20,9 @@ ElevationCCL::ElevationCCL(const rclcpp::NodeOptions options) : rclcpp::Node("cc
     );
 }
 
-ElevationCCL::~ElevationCCL() {}
+PlaneSegmentation::~PlaneSegmentation() {}
 
-void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr msg)
+void PlaneSegmentation::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr msg)
 {
     grid_map::GridMap map;
     grid_map::GridMapRosConverter::fromMessage(*msg, map);
@@ -54,7 +54,7 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
     // set score matrix
     const grid_map::Matrix& roughness = map.get("roughness"); 
     const grid_map::Matrix& slope = map.get("slope"); 
-    ScoreMatrix scores;
+    ccl::ScoreMatrix scores;
     scores.emplace_back(std::make_pair(roughness, roughness_thres_));
     scores.emplace_back(std::make_pair(slope, slope_thres_));
 
@@ -80,7 +80,7 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
     pub_grid_map_->publish(std::move(pub_msg));
 }
 
-void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
+void PlaneSegmentation::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
 {
     std::vector<Layers> mat;
     for (int i=0; i<label.rows(); ++i)
@@ -118,4 +118,4 @@ void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& lab
 }
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(ccl::ElevationCCL)
+RCLCPP_COMPONENTS_REGISTER_NODE(plane_segmentation::PlaneSegmentation)
