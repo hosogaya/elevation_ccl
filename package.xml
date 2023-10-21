@@ -16,7 +16,6 @@
   <depend>grid_map_ros</depend>
   <depend>std_msgs</depend>
   <depend>ssb-ccl</depend>
-  <depend>iris</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

@@ -25,7 +25,6 @@ find_package(grid_map_ros REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ssb-ccl REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(iris REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
