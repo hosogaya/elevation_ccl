@@ -1,7 +1,7 @@
-#include <plane_segmentation/ccl_solver.h>
+#include <elevation_ccl/ccl_solver.h>
 #include <iostream>
 
-namespace plane_segmentation
+namespace elevation_ccl
 {
 
 Region::Region(int label, const ccl::Matrix& s)

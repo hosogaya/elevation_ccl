@@ -1,7 +1,7 @@
 #pragma once
 #include <ssb_ccl.h>
 
-namespace plane_segmentation
+namespace elevation_ccl
 {
 class Region 
 {

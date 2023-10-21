@@ -1,8 +1,8 @@
-#include <plane_segmentation/plane_segmentation.h>
+#include <elevation_ccl/elevation_ccl.h>
 
-namespace plane_segmentation
+namespace elevation_ccl
 {
-PlaneSegmentation::PlaneSegmentation(const rclcpp::NodeOptions options) : rclcpp::Node("ccl", options)
+ElevationCCL::ElevationCCL(const rclcpp::NodeOptions options) : rclcpp::Node("ccl", options)
 {
     roughness_thres_ = declare_parameter("roughness_threshold", 0.1);
     slope_thres_ = declare_parameter("slope_threshold", 0.1);
@@ -12,7 +12,7 @@ PlaneSegmentation::PlaneSegmentation(const rclcpp::NodeOptions options) : rclcpp
     ccl_solver_.setDistanceThres(distance_threshold);
 
     sub_grid_map_ = create_subscription<grid_map_msgs::msg::GridMap>(
-        "input/grid_map", 1, std::bind(&PlaneSegmentation::callbackGridMap, this, std::placeholders::_1)
+        "input/grid_map", 1, std::bind(&ElevationCCL::callbackGridMap, this, std::placeholders::_1)
     );
 
     pub_grid_map_ = create_publisher<grid_map_msgs::msg::GridMap>(
@@ -20,9 +20,9 @@ PlaneSegmentation::PlaneSegmentation(const rclcpp::NodeOptions options) : rclcpp
     );
 }
 
-PlaneSegmentation::~PlaneSegmentation() {}
+ElevationCCL::~ElevationCCL() {}
 
-void PlaneSegmentation::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr msg)
+void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr msg)
 {
     grid_map::GridMap map;
     grid_map::GridMapRosConverter::fromMessage(*msg, map);
@@ -89,7 +89,7 @@ void PlaneSegmentation::callbackGridMap(const grid_map_msgs::msg::GridMap::Uniqu
     /* solve iris */
 }
 
-void PlaneSegmentation::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
+void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
 {
     std::vector<Layers> mat;
     for (int i=0; i<label.rows(); ++i)
@@ -127,4 +127,4 @@ void PlaneSegmentation::visualize(grid_map::GridMap& map, const ccl::LabelMatrix
 }
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(plane_segmentation::PlaneSegmentation)
+RCLCPP_COMPONENTS_REGISTER_NODE(elevation_ccl::ElevationCCL)
