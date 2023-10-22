@@ -27,7 +27,7 @@ def generate_launch_description():
                 package='elevation_ccl', 
                 plugin='elevation_ccl::ElevationCCL', 
                 name='elevation_ccl_node',
-                remappings=[("input/grid_map", "/filtered_map"), ("output/grid_map", "/labeled_map")],
+                remappings=[("elevation_ccl/input/grid_map", "/filtered_map"), ("elevation_ccl/output/grid_map", "/labeled_map")],
                 parameters=[params],
             )
         ],

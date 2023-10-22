@@ -37,6 +37,14 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+set(dependencies
+  grid_map_msgs
+  grid_map_core
+  grid_map_ros
+  rclcpp
+  ssb-ccl
+)
+
 # create ament index resource which references the libraries in the binary dir
 set(node_plugins "")
 
@@ -44,23 +52,15 @@ add_library(${PROJECT_NAME} SHARED
   src/elevation_ccl.cpp
   src/ccl_solver.cpp
 )
+ament_target_dependencies(${PROJECT_NAME}
+  ${dependencies}
+)
+target_link_libraries(${PROJECT_NAME} ssb-ccl)
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-)
-
-target_link_libraries(${PROJECT_NAME}
-  Eigen3::Eigen
-  ssb-ccl
-)
-
-ament_target_dependencies(${PROJECT_NAME}
-  grid_map_msgs
-  grid_map_core
-  grid_map_ros
-  rclcpp
 )
 
 rclcpp_components_register_nodes(${PROJECT_NAME} "elevation_ccl::ElevationCCL")
@@ -87,5 +87,29 @@ install(
     config
   DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_include_directories(include)
+ament_export_dependencies(ssb-ccl)
+ament_export_dependencies(${dependencies})
+ament_export_libraries(
+  ${PROJECT_NAME}
+)
+
+
+function(add_elevation_ccl_test base_name)
+	add_executable(${base_name} test/${base_name}.cpp)
+	target_link_libraries(${base_name} ${PROJECT_NAME})
+    target_include_directories(${base_name}
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+    install(
+        TARGETS ${base_name}
+        DESTINATION bin/${PROJECT_NAME}
+    )
+endfunction()
+
+add_elevation_ccl_test(test_ccl_solver)
 
 ament_package()

@@ -12,11 +12,11 @@ ElevationCCL::ElevationCCL(const rclcpp::NodeOptions options) : rclcpp::Node("cc
     ccl_solver_.setDistanceThres(distance_threshold);
 
     sub_grid_map_ = create_subscription<grid_map_msgs::msg::GridMap>(
-        "input/grid_map", 1, std::bind(&ElevationCCL::callbackGridMap, this, std::placeholders::_1)
+        "elevation_ccl/input/grid_map", 1, std::bind(&ElevationCCL::callbackGridMap, this, std::placeholders::_1)
     );
 
     pub_grid_map_ = create_publisher<grid_map_msgs::msg::GridMap>(
-        "output/grid_map", 1
+        "elevation_ccl/output/grid_map", 1
     );
 }
 
@@ -24,6 +24,7 @@ ElevationCCL::~ElevationCCL() {}
 
 void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr msg)
 {
+    RCLCPP_INFO(get_logger(), "subscribe map address: 0x%x", &(msg->data));
     grid_map::GridMap map;
     grid_map::GridMapRosConverter::fromMessage(*msg, map);
 
@@ -67,26 +68,50 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
         if (!ccl_solver_.backwardScan()) break;
         if (!ccl_solver_.forwardScan()) break;
     }
-    std::cout << "finish ccl" << std::endl;
 
     map.add("labels", label.cast<float>());
-    map.add("labeled_ground_shape", map.get("elevation_smooth"));
-    // visualize(map, label);
-    for (int i=0; i<label.rows(); ++i)
-        for (int j=0; j<label.cols(); ++j)
-            if (label(i,j)==0) map.get("labeled_ground_shape").coeffRef(i,j) = NAN;
+    int valid_label_num = 0;
+    for (int i=1; i<=ccl_solver_.getRegionNum(); ++i)
+    {
+        if (ccl_solver_.getRegion(i).component_num_ >= cell_num_thres_) valid_label_num++;
+    }
+
+    // RCLCPP_INFO(get_logger(), "valid label num: %d", valid_label_num);
+    // RCLCPP_INFO(get_logger(), "create valid_labels layer");
+    map.add("valid_labels", NAN);
+    map.add("valid_ground_shape", NAN);
+    // if ( (label.rows() != map.getSize()[0]) || (label.cols() != map.getSize()[1]) )
+    //     RCLCPP_ERROR(get_logger(), "matrix sizes are different");
+
+    int valid_region_num = 0;
+    for (const Region& r: ccl_solver_.getRegions())
+    {
+        if (r.component_num_ >= cell_num_thres_ && r.is_root_)
+        {
+            valid_region_num++;
+            int label = r.label_;
+            for (grid_map::GridMapIterator iter(map); !iter.isPastEnd(); ++iter)
+            {
+                if (map.at("labels", *iter) == label)
+                {
+                    map.at("valid_labels", *iter) = label;
+                    map.at("valid_ground_shape", *iter) = map.at("elevation_smooth", *iter);
+                }
+            }
+        }
+    }
+    // for (const Region& r: ccl_solver_.getRegions())
+    // {
+    //     if (r.is_root_)
+    //     {
+    //         std::cout << "label: " << r.label_ << " num: " << r.component_num_ << std::endl;
+    //     }
+    // }
+    // RCLCPP_INFO(get_logger(), "valid region num: %d", valid_region_num);
 
     grid_map_msgs::msg::GridMap::UniquePtr pub_msg = grid_map::GridMapRosConverter::toMessage(map);
+    RCLCPP_INFO(get_logger(), "publish map address: 0x%x", &(pub_msg->data));
     pub_grid_map_->publish(std::move(pub_msg));
-
-
-    /* iris */
-    
-    /* select connected region */
-
-    /* get contour of the selected region */
-
-    /* solve iris */
 }
 
 void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
