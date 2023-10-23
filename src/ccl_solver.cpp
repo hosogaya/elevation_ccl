@@ -40,8 +40,8 @@ bool CclSolver::isValid(const int& row, const int& col) const
         if (map.first(row, col) == NAN) return false; 
         if (map.first(row, col) > map.second) return false;
     }
-    if (row < 2 || row > rows_-2) return false;
-    if (col < 2 || col > cols_-2) return false;
+    if (row < 2 || row > rows_-3) return false;
+    if (col < 2 || col > cols_-3) return false;
     return true;
 }
 

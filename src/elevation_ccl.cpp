@@ -100,6 +100,7 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
             }
         }
     }
+    
     // for (const Region& r: ccl_solver_.getRegions())
     // {
     //     if (r.is_root_)
