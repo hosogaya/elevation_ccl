@@ -1,7 +1,7 @@
 #include <elevation_ccl/ccl_solver.h>
 #include <iostream>
 
-int main(int argc, char** argv)
+int main()
 {
     elevation_ccl::CclSolver solver;    
 
@@ -13,10 +13,10 @@ int main(int argc, char** argv)
     ccl::Matrix slope(6, 6);
     ccl::Matrix roughness(6, 6);
 
-    for (int i=0; i<state.size(); ++i)
+    for (size_t i=0; i<state.size(); ++i)
     {
         state[i].resize(6);
-        for (int j=0; j<state[i].size(); ++j)
+        for (size_t j=0; j<state[i].size(); ++j)
         {
             state[i][j].resize(3);
             if (i < 3) 
