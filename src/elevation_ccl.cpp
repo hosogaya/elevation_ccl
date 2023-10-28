@@ -24,6 +24,8 @@ ElevationCCL::~ElevationCCL() {}
 
 void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr msg)
 {
+    std::chrono::system_clock::time_point begin = std::chrono::system_clock::now();
+
     // RCLCPP_INFO(get_logger(), "subscribe map address: 0x%x", &(msg->data));
     grid_map::GridMap map;
     grid_map::GridMapRosConverter::fromMessage(*msg, map);
@@ -113,6 +115,10 @@ void ElevationCCL::callbackGridMap(const grid_map_msgs::msg::GridMap::UniquePtr 
     grid_map_msgs::msg::GridMap::UniquePtr pub_msg = grid_map::GridMapRosConverter::toMessage(map);
     // RCLCPP_INFO(get_logger(), "publish map address: 0x%x", &(pub_msg->data));
     pub_grid_map_->publish(std::move(pub_msg));
+    
+    std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+    RCLCPP_INFO(get_logger(), "elevation ccl processing time: %lf", elapsed);
 }
 
 void ElevationCCL::visualize(grid_map::GridMap& map, const ccl::LabelMatrix& label)
